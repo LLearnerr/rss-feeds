@@ -1,0 +1,37 @@
+name: Auto Build RSS Feeds
+
+on:
+  schedule:
+    # 每 2 小时自动运行一次
+    - cron: '0 */2 * * *'
+  # 支持在 GitHub 页面手动点击按钮立即运行
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取仓库代码
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2. 设置 Node.js 环境
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3. 执行 gen.js 脚本抓取数据
+      - name: Generate RSS Files
+        run: node gen.js
+
+      # 4. 将生成的 dist 目录发布到 gh-pages 分支
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
